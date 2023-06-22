@@ -2,7 +2,7 @@ import socket
 import ssl
 
 # Define the server address and port
-server_address = ('', 12345)
+server_address = ('127.0.0.1', 6969)
 
 # Create a TCP socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
