@@ -1,2 +1,5 @@
 myenv
 .vscode
+server.csr
+server.key
+server.crt
