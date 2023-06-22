@@ -4,10 +4,10 @@ import subprocess
 import tkinter as tk
 
 def run_server():
-    subprocess.Popen(['python', 'server.py'])
+    subprocess.Popen(['python3', 'server.py'])
 
 def run_client():
-    subprocess.Popen(['python', 'client.py'])
+    subprocess.Popen(['python3', 'client.py'])
 
 # Create the GUI
 window = tk.Tk()
