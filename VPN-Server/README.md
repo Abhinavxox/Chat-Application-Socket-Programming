@@ -24,3 +24,5 @@ openssl req -new -key server.key -out server.csr
 openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
 
 ```
+![image](https://github.com/Abhinavxox/Socket-Programming/assets/72064600/f94215d8-a393-45c2-b914-802899e9aacc)
+
