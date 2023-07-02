@@ -1,44 +1,84 @@
 import socket
-import tkinter as tk
 import threading
+import tkinter as tk
 
 # Server configuration
-HOST = '127.0.0.1'  # Server IP address
-PORT = 5000  # Server port number
+SERVER_HOST = '127.0.0.1'  # Server IP address
+SERVER_PORT = 5000  # Server port number
 
 class Client:
     def __init__(self):
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket = None
         self.gui_thread = None
 
     def start(self):
-        self.client_socket.connect((HOST, PORT))
-        print('Connected to the server.')
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.connect((SERVER_HOST, SERVER_PORT))
 
         self.gui_thread = threading.Thread(target=self.create_gui)
         self.gui_thread.start()
 
-        self.gui_thread.join()
+        receive_thread = threading.Thread(target=self.receive_messages)
+        receive_thread.start()
+
+    def receive_messages(self):
+        while True:
+            try:
+                data = self.server_socket.recv(1024).decode('utf-8')
+                if data:
+                    self.update_chat_window(data)
+            except ConnectionResetError:
+                print('Disconnected from the server.')
+                break
+
+    def send_message(self, event=None):
+        message = self.message_entry.get()
+        if message:
+            self.update_chat_window(f'You: {message}')
+            self.server_socket.send(message.encode('utf-8'))
+            self.message_entry.delete(0, tk.END)
 
     def create_gui(self):
         root = tk.Tk()
         root.title('Client')
 
-        message_label = tk.Label(root, text='Message:')
-        message_label.pack()
+        frame = tk.Frame(root)
+        frame.pack(fill='both', expand=True)
 
-        message_entry = tk.Entry(root)
-        message_entry.pack()
+        chat_frame = tk.Frame(frame, bg='white')
+        chat_frame.pack(side='left', fill='both', expand=True)
 
-        send_button = tk.Button(root, text='Send', command=lambda: self.send_message(message_entry.get()))
-        send_button.pack()
+        chat_label = tk.Label(chat_frame, text='Chat')
+        chat_label.pack()
+
+        self.chat_text = tk.Text(chat_frame, state='disabled')
+        self.chat_text.pack(fill='both', expand=True)
+
+        attendance_frame = tk.Frame(frame, bg='white')
+        attendance_frame.pack(side='right', fill='y')
+
+        attendance_label = tk.Label(attendance_frame, text='Attendance')
+        attendance_label.pack()
+
+        self.attendance_listbox = tk.Listbox(attendance_frame)
+        self.attendance_listbox.pack(fill='y')
+
+        bottom_frame = tk.Frame(root)
+        bottom_frame.pack(side='bottom', fill='x')
+
+        self.message_entry = tk.Entry(bottom_frame)
+        self.message_entry.pack(side='left', fill='x', expand=True)
+        self.message_entry.bind('<Return>', self.send_message)
+
+        send_button = tk.Button(bottom_frame, text='Send', command=self.send_message)
+        send_button.pack(side='right')
 
         root.mainloop()
 
-    def send_message(self, message):
-        self.client_socket.send(message.encode('utf-8'))
-        print(f'Message sent: {message}')
-
+    def update_chat_window(self, message):
+        self.chat_text.configure(state='normal')
+        self.chat_text.insert(tk.END, f'{message}\n')
+        self.chat_text.configure(state='disabled')
 
 if __name__ == '__main__':
     client = Client()

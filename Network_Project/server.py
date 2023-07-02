@@ -4,7 +4,7 @@ import tkinter as tk
 
 # Server configuration
 HOST = '127.0.0.1'  # Server IP address
-PORT = 5000  # Server port number
+PORT = 5000 # Server port number
 
 class Server:
     def __init__(self):
