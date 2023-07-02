@@ -10,6 +10,7 @@ class Client:
     def __init__(self):
         self.server_socket = None
         self.gui_thread = None
+        self.clients = []  # Store connected clients
 
     def start(self):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -53,15 +54,6 @@ class Client:
 
         self.chat_text = tk.Text(chat_frame, state='disabled')
         self.chat_text.pack(fill='both', expand=True)
-
-        attendance_frame = tk.Frame(frame, bg='white')
-        attendance_frame.pack(side='right', fill='y')
-
-        attendance_label = tk.Label(attendance_frame, text='Attendance')
-        attendance_label.pack()
-
-        self.attendance_listbox = tk.Listbox(attendance_frame)
-        self.attendance_listbox.pack(fill='y')
 
         bottom_frame = tk.Frame(root)
         bottom_frame.pack(side='bottom', fill='x')
