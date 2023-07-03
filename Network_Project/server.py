@@ -4,7 +4,7 @@ import tkinter as tk
 
 # Server configuration
 HOST = '127.0.0.1'  # Server IP address
-PORT = 5000 # Server port number
+PORT = 5001  # Server port number
 
 class Server:
     def __init__(self):
@@ -25,26 +25,28 @@ class Server:
             client_socket, addr = self.server_socket.accept()
             self.clients.append((client_socket, addr))
             print(f'New client connected: {addr}')
-            threading.Thread(target=self.handle_client, args=(client_socket,)).start()
+            threading.Thread(target=self.handle_client, args=(client_socket, addr)).start()
 
-    def handle_client(self, client_socket):
+    def handle_client(self, client_socket, addr):
+        self.update_gui_attendance_list(f'Connected: {addr}')
         while True:
             try:
                 data = client_socket.recv(1024).decode('utf-8')
                 if data:
                     print(f'Message received: {data}')
-                    self.broadcast_message(data, client_socket.getpeername())
+                    self.broadcast_message(data, addr)
 
             except ConnectionResetError:
                 self.clients = [client for client in self.clients if client[0] != client_socket]
-                print(f'Client disconnected: {client_socket.getpeername()}')
+                print(f'Client disconnected: {addr}')
                 client_socket.close()
+                self.update_gui_attendance_list(f'Disconnected: {addr}')
                 break
 
     def broadcast_message(self, message, source_addr):
         for client in self.clients:
             client_socket, addr = client
-            if client_socket.getpeername() != source_addr:
+            if addr != source_addr:
                 client_socket.send(f'{source_addr}: {message}'.encode('utf-8'))
 
         # Update GUI chat window
@@ -74,19 +76,13 @@ class Server:
         attendance_label = tk.Label(attendance_frame, text='Attendance')
         attendance_label.pack()
 
-        attendance_listbox = tk.Listbox(attendance_frame)
-        attendance_listbox.pack(fill='y')
+        self.attendance_listbox = tk.Listbox(attendance_frame)
+        self.attendance_listbox.pack(fill='y')
 
-        def update_attendance_list():
-            attendance_listbox.delete(0, tk.END)
-            for client in self.clients:
-                client_socket, addr = client
-                attendance_listbox.insert(tk.END, addr)
-            root.after(1000, update_attendance_list)
-
-        root.after(1000, update_attendance_list)
         root.mainloop()
 
+    def update_gui_attendance_list(self, message):
+        self.attendance_listbox.insert(tk.END, message)
 
 if __name__ == '__main__':
     server = Server()
